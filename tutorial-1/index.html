@@ -13,11 +13,16 @@
       </div>
       <script src="pixi.js-master/bin/pixi.dev.js"></script>
       <script>
+         var bunny;
+
          function init() {
+            stageWidth = 512;
+            stageHeight = 384;
+
             stage = new PIXI.Stage(0x66FF99);
             renderer = new PIXI.autoDetectRenderer(
-               512,
-               384,
+               stageWidth,
+               stageHeight,
                document.getElementById("game-canvas")
             );
 
@@ -37,10 +42,31 @@
             mid.tilePosition.y = 0;
             stage.addChild(mid);
 
+            requestAnimFrame(animate);
+
+            // create a texture from an image path
+            var texture = PIXI.Texture.fromImage("bunny.png");
+
+            // create a new Sprite using the texture
+            bunny = new PIXI.Sprite(texture);
+
+            bunny.anchor.x = 0.5;
+            bunny.anchor.y = 0.5;
+
+            bunny.position.x = 256;
+            bunny.position.y = 192;
+
+            stage.addChild(bunny);
+
             requestAnimFrame(update);
          }
 
+         setTimeout(function(){
+            requestAnimFrame(animate);
+         }, 5000);
+
          function update() {
+
             far.tilePosition.x -= 0.128;
             mid.tilePosition.x -= 0.64;
             
@@ -48,6 +74,30 @@
 
             requestAnimFrame(update);
          }
+
+         function animate() {
+            requestAnimFrame(animate);
+
+            // just for fun, let's rotate mr rabbit a little
+            bunny.rotation += 0.02;
+
+            // render the stage
+            renderer.render(stage);
+         }
+
+         var options = {frameEventName: "animationFrame"};
+         var controller = Leap.loop(options, function(frame) {
+            if (frame.pointables.length > 0) {
+              // Get the normalized finger position
+              var pos = frame.pointables[0].stabilizedTipPosition;
+              var normPos = frame.interactionBox.normalizePoint(pos, true);
+
+              // Move the bunny to the normalized finger position
+              bunny.x = stageWidth * normPos[0];
+              bunny.y = stageHeight * (1 - normPos[1]);
+            }
+         });
+
       </script>
    </body>
 </html>
